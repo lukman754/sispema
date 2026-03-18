@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Sispema Tools",
+  "version": "3.1.0",
+  "description": "Tools untuk mengekstrak data dari SISPEMA",
+  "content_scripts": [
+    {
+      "matches": ["https://sispema.unpam.ac.id/prestasi/validasi-prestasi"],
+      "js": ["prestasi.js"],
+      "world": "MAIN"
+    }
+  ],
+  "host_permissions": [
+    "*://sispema.unpam.ac.id/*"
+  ]
+}

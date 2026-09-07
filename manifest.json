@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Sispema Rekognisi Auto Validator",
+  "version": "1.0.0",
+  "description": "Validator Otomatis untuk Rekognisi Sispema Unpam",
+  "permissions": [
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://sispema.unpam.ac.id/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://sispema.unpam.ac.id/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["panel.html", "panel.js", "panel.css"],
+      "matches": ["https://sispema.unpam.ac.id/*"]
+    }
+  ]
+}

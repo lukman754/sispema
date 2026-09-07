@@ -1,0 +1,989 @@
+<!doctype html>
+<html class="light" lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Rekognisi Auto Validator</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        /* Material Design 3 tonal palette — blue/teal */
+        --md-primary: #0b6e4f;
+        --md-on-primary: #ffffff;
+        --md-primary-container: #b7f0d3;
+        --md-on-primary-container: #00210f;
+
+        --md-surface: #fbfdf9;
+        --md-surface-container-lowest: #ffffff;
+        --md-surface-container-low: #f3f6f1;
+        --md-surface-container: #edf1eb;
+        --md-surface-container-high: #e7ebe4;
+
+        --md-on-surface: #191c1a;
+        --md-on-surface-variant: #414942;
+
+        --md-outline: #71796f;
+        --md-outline-variant: #c1c9be;
+
+        --md-success: #2e7d32;
+        --md-success-container: #e8f5e9;
+        --md-error: #b3261e;
+        --md-error-container: #f9dedc;
+
+        --elev-1:
+          0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+        --elev-2:
+          0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
+        --elev-3:
+          0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background-color: var(--md-surface-container-low);
+        font-family: "Roboto", sans-serif;
+        display: flex;
+        justify-content: center;
+        min-height: max(600px, 100dvh);
+        overflow-x: hidden;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      .material-icons {
+        font-size: 20px;
+        line-height: 1;
+        vertical-align: middle;
+        user-select: none;
+      }
+
+      .main-canvas {
+        width: 100%;
+        max-width: 390px;
+        background-color: var(--md-surface-container-low);
+        min-height: 100vh;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      ::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+      }
+
+      /* ---------- Top App Bar ---------- */
+      .top-app-bar {
+        background-color: var(--md-surface-container-lowest);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 10px 12px;
+        box-shadow: var(--elev-1);
+      }
+      .top-app-bar .brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .top-app-bar .brand-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: var(--md-primary-container);
+        color: var(--md-on-primary-container);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .top-app-bar h1 {
+        font-size: 17px;
+        font-weight: 500;
+        color: var(--md-on-surface);
+        margin: 0;
+        letter-spacing: 0;
+      }
+      .icon-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--md-on-surface-variant);
+        transition: background-color 0.15s ease;
+      }
+      .icon-btn:hover {
+        background-color: rgba(28, 27, 31, 0.08);
+      }
+      .icon-btn:active {
+        background-color: rgba(28, 27, 31, 0.12);
+        transform: scale(0.96);
+      }
+
+      /* ---------- Main content ---------- */
+      main {
+        flex: 1;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding-bottom: 88px;
+      }
+
+      /* ---------- MD3 Card / Section ---------- */
+      .md-card {
+        background-color: var(--md-surface-container-lowest);
+        border: 1px solid var(--md-outline-variant);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .md-card-header {
+        padding: 7px 12px;
+        background-color: var(--md-surface-container);
+        border-bottom: 1px solid var(--md-outline-variant);
+      }
+      .md-card-header h2 {
+        margin: 0;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--md-on-surface-variant);
+      }
+      .md-card-body {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      /* ---------- MD3 Outlined field ---------- */
+      .md-field {
+        position: relative;
+      }
+      .md-field .md-label {
+        position: absolute;
+        top: -8px;
+        left: 12px;
+        padding: 0 4px;
+        background-color: var(--md-surface-container-lowest);
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--md-on-surface-variant);
+        z-index: 1;
+        pointer-events: none;
+      }
+      .md-field.on-container .md-label {
+        background-color: var(--md-surface-container-lowest);
+      }
+      .md-input,
+      .md-select {
+        width: 100%;
+        background-color: transparent;
+        border: 1px solid var(--md-outline);
+        border-radius: 8px;
+        padding: 9px 11px;
+        font-family: "Roboto", sans-serif;
+        font-size: 13.5px;
+        color: var(--md-on-surface);
+        outline: none;
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
+        -webkit-user-select: text;
+        user-select: text;
+      }
+      .md-input:focus,
+      .md-select:focus {
+        border-color: var(--md-primary);
+        border-width: 1.5px;
+        padding: 8.5px 10.5px;
+        box-shadow: none;
+      }
+      .md-select {
+        appearance: none;
+        cursor: pointer;
+        padding-right: 30px;
+      }
+      .md-field .select-arrow {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--md-on-surface-variant);
+        pointer-events: none;
+      }
+      .md-supporting-text {
+        font-size: 10.5px;
+        color: var(--md-on-surface-variant);
+        margin: 0;
+        padding: 0 10px;
+        opacity: 0.85;
+        line-height: 1.35;
+      }
+
+      .field-grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .field-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+
+      /* ---------- MD3 Switch ---------- */
+      .md-switch-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .md-switch-row label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--md-on-surface);
+        cursor: pointer;
+      }
+      .md-switch {
+        position: relative;
+        width: 40px;
+        height: 24px;
+        flex-shrink: 0;
+        appearance: none;
+        background-color: var(--md-surface-container-high);
+        border: 2px solid var(--md-outline);
+        border-radius: 999px;
+        cursor: pointer;
+        transition:
+          background-color 0.18s ease,
+          border-color 0.18s ease;
+      }
+      .md-switch::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 4px;
+        width: 12px;
+        height: 12px;
+        background-color: var(--md-outline);
+        border-radius: 50%;
+        transform: translateY(-50%);
+        transition:
+          transform 0.18s ease,
+          background-color 0.18s ease,
+          width 0.18s ease,
+          height 0.18s ease,
+          left 0.18s ease;
+      }
+      .md-switch:checked {
+        background-color: var(--md-primary);
+        border-color: var(--md-primary);
+      }
+      .md-switch:checked::before {
+        background-color: var(--md-on-primary);
+        width: 16px;
+        height: 16px;
+        left: 18px;
+      }
+
+      /* ---------- Stats ---------- */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .stat-card {
+        background-color: var(--md-surface-container-lowest);
+        border: 1px solid var(--md-outline-variant);
+        border-radius: 14px;
+        padding: 10px 6px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+      }
+      .stat-card .stat-value {
+        font-size: 21px;
+        font-weight: 500;
+        color: var(--md-primary);
+        line-height: 1.2;
+      }
+      .stat-card .stat-label {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--md-on-surface-variant);
+      }
+
+      /* ---------- Fetch results ---------- */
+      #section-fetch-results {
+        height: 240px;
+        display: flex;
+        flex-direction: column;
+      }
+      #section-fetch-results.hidden {
+        display: none;
+      }
+      .fetch-header {
+        padding: 7px 10px;
+        background-color: var(--md-surface-container);
+        border-bottom: 1px solid var(--md-outline-variant);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .fetch-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .fetch-count-chip {
+        font-size: 9.5px;
+        font-weight: 700;
+        color: var(--md-on-primary-container);
+        background-color: var(--md-primary-container);
+        padding: 2px 8px;
+        border-radius: 999px;
+      }
+      .search-field {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background-color: var(--md-surface-container-lowest);
+        border: 1px solid var(--md-outline-variant);
+        border-radius: 18px;
+        padding: 0 8px;
+      }
+      .search-field .material-icons {
+        color: var(--md-on-surface-variant);
+        font-size: 17px;
+      }
+      .search-field input {
+        border: none;
+        outline: none;
+        background: transparent;
+        padding: 6px 5px;
+        font-size: 12.5px;
+        width: 100%;
+        color: var(--md-on-surface);
+      }
+      #fetch-items-list {
+        padding: 8px;
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        background-color: var(--md-surface-container-lowest);
+      }
+      .empty-state {
+        font-size: 12px;
+        font-style: italic;
+        color: var(--md-on-surface-variant);
+        opacity: 0.6;
+        text-align: center;
+        padding: 40px 0;
+      }
+
+      /* ---------- Buttons ---------- */
+      .btn-filled {
+        width: 100%;
+        background-color: var(--md-primary);
+        color: var(--md-on-primary);
+        border: none;
+        padding: 10px 12px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-family: "Roboto", sans-serif;
+        font-size: 13.5px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+        box-shadow: var(--elev-1);
+        transition:
+          box-shadow 0.15s ease,
+          transform 0.1s ease,
+          background-color 0.15s ease;
+      }
+      .btn-filled:hover {
+        box-shadow: var(--elev-2);
+      }
+      .btn-filled:active {
+        transform: scale(0.98);
+        box-shadow: var(--elev-1);
+      }
+      .btn-filled:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+        box-shadow: none;
+      }
+
+      .btn-icon-filled {
+        background-color: var(--md-primary);
+        color: var(--md-on-primary);
+        border: none;
+        border-radius: 8px;
+        width: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition:
+          box-shadow 0.15s ease,
+          transform 0.1s ease;
+        box-shadow: var(--elev-1);
+      }
+      .btn-icon-filled:hover {
+        box-shadow: var(--elev-2);
+      }
+      .btn-icon-filled:active {
+        transform: scale(0.96);
+      }
+
+      /* ---------- Log console ---------- */
+      #section-bulk-log {
+        height: 200px;
+        display: flex;
+        flex-direction: column;
+      }
+      #log-container {
+        padding: 9px;
+        flex: 1;
+        overflow-y: auto;
+        font-family: "Roboto Mono", monospace;
+        font-size: 10.5px;
+        line-height: 1.55;
+        color: var(--md-on-surface-variant);
+        background-color: var(--md-surface-container-lowest);
+        -webkit-user-select: text;
+        user-select: text;
+      }
+
+      /* ---------- Single validation status box ---------- */
+      #single-status-box {
+        padding: 9px;
+        border-radius: 10px;
+        border: 1px solid var(--md-outline-variant);
+        background-color: var(--md-surface-container);
+        font-size: 11.5px;
+        font-family: "Roboto Mono", monospace;
+        line-height: 1.45;
+        -webkit-user-select: text;
+        user-select: text;
+      }
+      #single-status-box.hidden {
+        display: none;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .btn-filled.is-running {
+        background-color: var(--md-error);
+      }
+
+      .btn-filled.is-ready {
+        background-color: var(--md-primary);
+      }
+
+      .fetch-item {
+        padding: 8px;
+        background-color: var(--md-surface-container-low);
+        border: 1px solid var(--md-outline-variant);
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        font-size: 11px;
+      }
+
+      .fetch-item-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .fetch-item-nim {
+        color: var(--md-primary);
+        font-weight: 700;
+      }
+
+      .fetch-item-semester,
+      .fetch-item-meta {
+        color: var(--md-on-surface-variant);
+      }
+
+      .fetch-item-semester {
+        font-size: 10px;
+        font-weight: 600;
+      }
+
+      .fetch-item-name {
+        color: var(--md-on-surface);
+        font-weight: 600;
+        line-height: 1.35;
+      }
+
+      .fetch-item-meta {
+        margin-top: 2px;
+        opacity: 0.8;
+      }
+
+      .fetch-item-meta.is-italic {
+        font-style: italic;
+      }
+
+      .status-box {
+        padding: 9px;
+        border-radius: 10px;
+        border: 1px solid var(--md-outline-variant);
+        font-size: 11.5px;
+        font-family: "Roboto Mono", monospace;
+        line-height: 1.45;
+      }
+
+      .status-box.is-ok {
+        background-color: var(--md-success-container);
+        color: var(--md-success);
+      }
+
+      .status-box.is-loading {
+        background-color: var(--md-surface-container-low);
+        color: var(--md-on-surface-variant);
+      }
+
+      .status-box.is-warning {
+        background-color: #fff8e1;
+        color: #6d4c00;
+      }
+
+      .status-box.is-error {
+        background-color: var(--md-error-container);
+        color: var(--md-error);
+      }
+
+      .log-entry {
+        margin: 0 0 4px;
+      }
+
+      .log-time {
+        opacity: 0.4;
+      }
+
+      .log-success {
+        color: var(--md-success);
+        font-weight: 600;
+      }
+
+      .log-error {
+        color: var(--md-error);
+        font-weight: 600;
+      }
+
+      .log-warning {
+        color: var(--md-primary);
+        font-weight: 600;
+      }
+
+      .log-info {
+        color: var(--md-on-surface-variant);
+      }
+
+      /* ---------- Bottom Navigation ---------- */
+      footer.bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        max-width: 390px;
+        margin: 0 auto;
+        right: 0;
+        z-index: 50;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        background-color: var(--md-surface-container-lowest);
+        box-shadow: var(--elev-2);
+        height: 60px;
+        padding-bottom: env(safe-area-inset-bottom, 0);
+      }
+      .nav-item {
+        flex: 1;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        color: var(--md-on-surface-variant);
+        transition: color 0.15s ease;
+      }
+      .nav-item .nav-pill {
+        width: 46px;
+        height: 22px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.18s ease;
+      }
+      .nav-item.active {
+        color: var(--md-on-surface);
+      }
+      .nav-item.active .nav-pill {
+        background-color: var(--md-primary-container);
+      }
+      .nav-item.active .material-icons {
+        color: var(--md-on-primary-container);
+      }
+      .nav-item .nav-label {
+        font-size: 11px;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-canvas">
+      <!-- Top App Bar -->
+      <header class="top-app-bar">
+        <div class="brand">
+          <div class="brand-icon"><span class="material-icons">bolt</span></div>
+          <h1>Auto Validator</h1>
+        </div>
+        <button id="close-panel-btn" class="icon-btn" title="Tutup Panel">
+          <span class="material-icons">close</span>
+        </button>
+      </header>
+
+      <!-- Content -->
+      <main>
+        <!-- Jenis Validasi -->
+        <div class="md-card">
+          <div class="md-card-body" style="padding-bottom: 16px">
+            <div class="md-field on-container">
+              <span class="md-label">Jenis Validasi</span>
+              <select id="cfg-validation-type" class="md-select">
+                <option value="rekognisi">Rekognisi Kegiatan</option>
+                <option value="luaran">Luaran</option>
+                <option value="prestasi">Prestasi</option>
+                <option value="publikasi">Publikasi</option>
+              </select>
+              <span class="material-icons select-arrow">expand_more</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Tab View -->
+        <section id="section-settings" class="md-card hidden">
+          <div class="md-card-header"><h2>Kredensial &amp; Filter</h2></div>
+          <div class="md-card-body">
+            <div class="md-field on-container">
+              <span class="md-label">Bearer Token</span>
+              <input
+                id="cfg-token"
+                class="md-input"
+                placeholder="Masukkan bearer token"
+                type="password"
+              />
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div class="md-field on-container">
+                <span class="md-label">Filter Awalan NIM (UCR)</span>
+                <input
+                  id="cfg-nim-prefix"
+                  class="md-input"
+                  placeholder="Contoh: 22 (Kosongkan jika semua)"
+                  type="text"
+                />
+              </div>
+              <p class="md-supporting-text">
+                Hanya memproses ajuan dengan NIM/UCR yang berawalan angka ini.
+              </p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div class="md-field on-container">
+                <span class="md-label">Semester Ajuan</span>
+                <input
+                  id="cfg-semester"
+                  class="md-input"
+                  placeholder="Contoh: 20252 (Kosongkan jika semua)"
+                  type="text"
+                />
+              </div>
+              <p class="md-supporting-text">
+                Contoh: 20251 (Ganjil 2025), 20252 (Genap 2025). Kosongkan jika
+                ingin memproses semua semester.
+              </p>
+            </div>
+
+            <div
+              id="cfg-tahun-container"
+              style="display: flex; flex-direction: column; gap: 6px"
+            >
+              <div class="md-field on-container">
+                <span class="md-label">Tahun Kegiatan (Rekognisi)</span>
+                <input
+                  id="cfg-tahun-kegiatan"
+                  class="md-input"
+                  placeholder="Contoh: 2024 (Kosongkan jika semua)"
+                  type="text"
+                />
+              </div>
+              <p class="md-supporting-text">
+                Hanya memproses rekognisi pada tahun kegiatan ini.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Bulk Tab View -->
+        <div
+          id="wrapper-bulk"
+          style="display: flex; flex-direction: column; gap: 16px"
+        >
+          <!-- Parameter Bulk -->
+          <section id="section-bulk-config" class="md-card">
+            <div class="md-card-header"><h2>Parameter Bulk</h2></div>
+            <div class="md-card-body">
+              <div class="field-grid-3">
+                <div class="md-field on-container">
+                  <span class="md-label">Page From</span>
+                  <input
+                    id="cfg-page-from"
+                    class="md-input"
+                    type="number"
+                    value="1"
+                    style="padding: 9px 8px"
+                  />
+                </div>
+                <div class="md-field on-container">
+                  <span class="md-label">Page To</span>
+                  <input
+                    id="cfg-page-to"
+                    class="md-input"
+                    type="number"
+                    value="10"
+                    style="padding: 9px 8px"
+                  />
+                </div>
+                <div class="md-field on-container">
+                  <span class="md-label">Per Page</span>
+                  <input
+                    id="cfg-per-page"
+                    class="md-input"
+                    type="number"
+                    value="100"
+                    style="padding: 9px 8px"
+                  />
+                </div>
+              </div>
+
+              <div class="field-grid-2">
+                <div class="md-field on-container">
+                  <span class="md-label">Delay (ms)</span>
+                  <input
+                    id="cfg-delay"
+                    class="md-input"
+                    type="number"
+                    value="2500"
+                  />
+                </div>
+                <div class="md-field on-container">
+                  <span class="md-label">Max Retry</span>
+                  <input
+                    id="cfg-max-retry"
+                    class="md-input"
+                    type="number"
+                    value="5"
+                  />
+                </div>
+              </div>
+
+              <div class="md-switch-row">
+                <label for="cfg-auto-process"
+                  >Auto-validasi langsung setelah fetch</label
+                >
+                <input
+                  id="cfg-auto-process"
+                  type="checkbox"
+                  class="md-switch"
+                  checked
+                />
+              </div>
+            </div>
+          </section>
+
+          <!-- Stats -->
+          <div id="section-bulk-stats" class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-value" id="stat-diambil">0</span>
+              <span class="stat-label">ID Diambil</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="stat-filter">0</span>
+              <span class="stat-label">Lolos Filter</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="stat-validasi">0</span>
+              <span class="stat-label">Tervalidasi</span>
+            </div>
+          </div>
+
+          <!-- Fetch Results -->
+          <section id="section-fetch-results" class="md-card hidden">
+            <div class="fetch-header">
+              <div class="fetch-header-row">
+                <h2
+                  style="
+                    margin: 0;
+                    font-size: 11px;
+                    font-weight: 700;
+                    letter-spacing: 0.08em;
+                    text-transform: uppercase;
+                    color: var(--md-on-surface-variant);
+                  "
+                >
+                  Hasil Fetch
+                </h2>
+                <span id="fetch-count" class="fetch-count-chip">0 Item</span>
+              </div>
+              <div class="search-field">
+                <span class="material-icons">search</span>
+                <input
+                  id="search-items-input"
+                  placeholder="Cari NIM atau Nama Ajuan..."
+                  type="text"
+                />
+              </div>
+            </div>
+            <div id="fetch-items-list">
+              <!-- Dynamic list items here -->
+            </div>
+          </section>
+
+          <!-- Main Action -->
+          <button id="main-action" class="btn-filled">
+            <span id="main-action-icon" class="material-icons">play_arrow</span>
+            <span id="main-action-text">Mulai Validasi</span>
+          </button>
+
+          <!-- Log -->
+          <section id="section-bulk-log" class="md-card">
+            <div
+              class="md-card-header"
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 14px;
+              "
+            >
+              <h2>Console Log</h2>
+              <button
+                id="clear-log-btn"
+                class="icon-btn"
+                style="width: 32px; height: 32px"
+                title="Bersihkan Log"
+              >
+                <span class="material-icons" style="font-size: 17px"
+                  >delete_sweep</span
+                >
+              </button>
+            </div>
+            <div id="log-container">
+              <p class="empty-state">Log akan muncul di sini...</p>
+            </div>
+          </section>
+        </div>
+
+        <!-- Single Tab View -->
+        <section id="section-single" class="md-card hidden">
+          <div class="md-card-header"><h2>Validasi Single ID</h2></div>
+          <div class="md-card-body">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div class="md-field on-container">
+                <span class="md-label">ID Ajuan Rekognisi</span>
+                <div style="display: flex; gap: 8px">
+                  <input
+                    id="single-id-input"
+                    class="md-input"
+                    style="flex: 1"
+                    placeholder="Masukkan ID ajuan"
+                    type="text"
+                  />
+                  <button
+                    id="single-action-btn"
+                    class="btn-icon-filled"
+                    title="Validasi"
+                  >
+                    <span class="material-icons">check_circle</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div id="single-status-box" class="hidden">
+              <!-- Dynamic status messages here -->
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Bottom Navigation -->
+      <footer class="bottom-nav">
+        <button id="nav-bulk-btn" class="nav-item active">
+          <span class="nav-pill"
+            ><span class="material-icons">dynamic_feed</span></span
+          >
+          <span class="nav-label">Bulk</span>
+        </button>
+        <button id="nav-single-btn" class="nav-item">
+          <span class="nav-pill"
+            ><span class="material-icons">person_search</span></span
+          >
+          <span class="nav-label">Single</span>
+        </button>
+        <button id="nav-settings-btn" class="nav-item">
+          <span class="nav-pill"
+            ><span class="material-icons">settings</span></span
+          >
+          <span class="nav-label">Settings</span>
+        </button>
+      </footer>
+    </div>
+
+    <script src="panel.js"></script>
+  </body>
+</html>

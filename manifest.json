@@ -10,19 +10,17 @@
       "matches": ["https://sispema.unpam.ac.id/*"],
       "js": ["content.js"],
       "run_at": "document_end"
+    },
+    {
+      "matches": ["https://sispema.unpam.ac.id/prestasi/validasi-prestasi"],
+      "js": ["prestasi.js"],
+      "world": "MAIN"
     }
   ],
   "web_accessible_resources": [
     {
       "resources": ["panel.html", "panel.js", "panel.css"],
       "matches": ["https://sispema.unpam.ac.id/*"]
-    }
-  ],
-  "content_scripts": [
-    {
-      "matches": ["https://sispema.unpam.ac.id/prestasi/validasi-prestasi"],
-      "js": ["prestasi.js"],
-      "world": "MAIN"
     }
   ],
   "host_permissions": ["*://sispema.unpam.ac.id/*"]

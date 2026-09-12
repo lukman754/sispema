@@ -492,6 +492,17 @@
         closePanel();
         break;
 
+      case "GET_ACCESS_TOKEN": {
+        const token = localStorage
+          .getItem("access_token")
+          ?.replace(/^__q_strn\|/, "");
+        iframe.contentWindow.postMessage(
+          { action: "ACCESS_TOKEN", token: token || "" },
+          "*",
+        );
+        break;
+      }
+
       case "START_BULK":
         if (isBulkRunning) return;
         isBulkRunning = true;

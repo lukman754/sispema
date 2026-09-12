@@ -100,7 +100,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Configuration Persistence (localStorage) ---
   function loadConfig() {
-    inputs.token.value = localStorage.getItem("rekognisi_token") || "";
+    const accessToken = localStorage
+      .getItem("access_token")
+      ?.replace(/^__q_strn\|/, "");
+    inputs.token.value =
+      accessToken || localStorage.getItem("rekognisi_token") || "";
     if (inputs.validationType) {
       inputs.validationType.value =
         localStorage.getItem("rekognisi_validation_type") || "rekognisi";
@@ -182,6 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Load config on startup
   loadConfig();
+  window.parent.postMessage({ action: "GET_ACCESS_TOKEN" }, "*");
 
   // --- Parent Communication ---
   closePanelBtn.addEventListener("click", () => {
@@ -385,6 +390,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!data) return;
 
     switch (data.action) {
+      case "ACCESS_TOKEN":
+        if (data.token && inputs.token) {
+          inputs.token.value = data.token;
+          saveConfig();
+        }
+        break;
+
       case "BULK_STATE_CHANGE":
         isBulkRunning = data.running;
         if (isBulkRunning) {

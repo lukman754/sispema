@@ -121,6 +121,24 @@
 
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+  const KATEGORI_LUARAN_IDS = [
+    "KLU01",
+    "KLU02",
+    "KLU03",
+    "KLU04",
+    "KLU05",
+    "KLU06",
+    "KLU09",
+    "KLU12",
+    "KLU13",
+    "KLU14",
+    "KLU16",
+    "KLU17",
+    "KLU18",
+    "KLU19",
+    "KLU20",
+  ];
+
   // --- Fetch rate-limiting engine ---
   const fetchWithRateLimit = async (
     url,
@@ -251,6 +269,11 @@
         namaAjuan:
           item.nama_ajuan_luaran || item.nama_luaran || findNamaAjuanKey(item),
         semester: item.id_semester || item.id_semester_ajuan || "",
+        kategoriLuaran:
+          item.id_kategori_luaran ||
+          item.kategori_luaran?.id_kategori_luaran ||
+          "",
+        namaKategoriLuaran: item.kategori_luaran?.nama_kategori_luaran || "",
       }),
       isEligible: (detail) => {
         return true;
@@ -265,6 +288,12 @@
         nama: item.mahasiswa?.nama || "",
         namaAjuan: item.nama_ajuan_publikasi || findNamaAjuanKey(item),
         semester: item.id_semester_ajuan || item.id_semester || "",
+        kategoriPublikasi:
+          item.id_kategori_publikasi ||
+          item.kategori_publikasi?.id_kategori_publikasi ||
+          "",
+        namaKategoriPublikasi:
+          item.kategori_publikasi?.nama_kategori_publikasi || "",
       }),
       isEligible: (detail) => {
         return true;
@@ -299,6 +328,12 @@
         url += `&id_semester_ajuan=${config.semesterAjuan}`;
       }
     }
+    if (config.validationType === "luaran" && config.kategoriLuaran) {
+      url += `&id_kategori_luaran=${encodeURIComponent(config.kategoriLuaran)}`;
+    }
+    if (config.validationType === "publikasi" && config.kategoriPublikasi) {
+      url += `&id_kategori_publikasi=${encodeURIComponent(config.kategoriPublikasi)}`;
+    }
     const res = await fetchWithRateLimit(
       url,
       config.token,
@@ -308,6 +343,20 @@
       { method: "GET" },
     );
     return res?.data?.map(typeCfg.mapListItem) || [];
+  };
+
+  const getLuaranCategories = async (token, logCb) => {
+    const res = await fetchWithRateLimit(
+      "https://sispema.unpam.ac.id/api/luaran/kategori",
+      token,
+      3,
+      1500,
+      logCb,
+      { method: "GET" },
+    );
+    return (res?.data || []).filter((category) =>
+      KATEGORI_LUARAN_IDS.includes(category.id_kategori_luaran),
+    );
   };
 
   const getDetailAjuan = async (id, token, config, logCb) => {
@@ -502,6 +551,47 @@
         );
         break;
       }
+
+      case "GET_LUARAN_CATEGORIES": {
+        const token = localStorage
+          .getItem("access_token")
+          ?.replace(/^__q_strn\|/, "");
+        const categories = await getLuaranCategories(token, () => {});
+        iframe.contentWindow.postMessage(
+          { action: "LUARAN_CATEGORIES", categories },
+          "*",
+        );
+        break;
+      }
+
+      case "GET_PUBLIKASI_CATEGORIES": {
+        const token = localStorage
+          .getItem("access_token")
+          ?.replace(/^__q_strn\|/, "");
+        const res = await fetchWithRateLimit(
+          "https://sispema.unpam.ac.id/api/publikasi/kategori",
+          token,
+          3,
+          1500,
+          () => {},
+          { method: "GET" },
+        );
+        iframe.contentWindow.postMessage(
+          { action: "PUBLIKASI_CATEGORIES", categories: res?.data || [] },
+          "*",
+        );
+        break;
+      }
+
+      case "CLEAR_FETCHED_IDS":
+        fetchedIdsList = [];
+        filteredIdsList = [];
+        validatedIdsList = [];
+        currentProgress = 0;
+        bulkStats = { diambil: 0, filter: 0, validasi: 0 };
+        activeConfig = null;
+        updateIframeStats();
+        break;
 
       case "START_BULK":
         if (isBulkRunning) return;

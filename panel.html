@@ -700,6 +700,31 @@
               </select>
               <span class="material-icons select-arrow">expand_more</span>
             </div>
+
+            <div
+              id="cfg-kategori-luaran-container"
+              class="hidden"
+              style="
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                margin-top: 12px;
+              "
+            >
+              <div class="md-field on-container">
+                <span id="cfg-kategori-label" class="md-label"
+                  >Kategori Luaran</span
+                >
+                <select
+                  id="cfg-kategori-luaran"
+                  class="md-select"
+                  style="padding: 8px"
+                ></select>
+              </div>
+              <p class="md-supporting-text">
+                Pilih kategori luaran yang akan diproses.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -877,7 +902,18 @@
                 >
                   Hasil Fetch
                 </h2>
-                <span id="fetch-count" class="fetch-count-chip">0 Item</span>
+                <div style="display: flex; gap: 8px; align-items: center">
+                  <span id="fetch-count" class="fetch-count-chip">0 Item</span>
+                  <button
+                    id="clear-fetched-ids-btn"
+                    class="icon-btn"
+                    type="button"
+                    title="Clear ID ajuan"
+                    aria-label="Clear ID ajuan"
+                  >
+                    <span class="material-icons">clear_all</span>
+                  </button>
+                </div>
               </div>
               <div class="search-field">
                 <span class="material-icons">search</span>

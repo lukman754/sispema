@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     nimPrefix: document.getElementById("cfg-nim-prefix"),
     semester: document.getElementById("cfg-semester"),
     tahunKegiatan: document.getElementById("cfg-tahun-kegiatan"),
+    kategoriLuaran: document.getElementById("cfg-kategori-luaran"),
     autoProcess: document.getElementById("cfg-auto-process"),
     pageFrom: document.getElementById("cfg-page-from"),
     pageTo: document.getElementById("cfg-page-to"),
@@ -26,6 +27,30 @@ document.addEventListener("DOMContentLoaded", () => {
     maxRetry: document.getElementById("cfg-max-retry"),
   };
   const tahunContainer = document.getElementById("cfg-tahun-container");
+  const kategoriLuaranContainer = document.getElementById(
+    "cfg-kategori-luaran-container",
+  );
+  const kategoriLabel = document.getElementById("cfg-kategori-label");
+  const clearFetchedIdsBtn = document.getElementById("clear-fetched-ids-btn");
+  const KATEGORI_LUARAN_IDS = [
+    "KLU01",
+    "KLU02",
+    "KLU03",
+    "KLU04",
+    "KLU05",
+    "KLU06",
+    "KLU09",
+    "KLU12",
+    "KLU13",
+    "KLU14",
+    "KLU16",
+    "KLU17",
+    "KLU18",
+    "KLU19",
+    "KLU20",
+  ];
+  let kategoriLuaran = [];
+  let kategoriPublikasi = [];
 
   const stats = {
     diambil: document.getElementById("stat-diambil"),
@@ -96,6 +121,60 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       tahunContainer.classList.add("hidden");
     }
+    if (kategoriLuaranContainer) {
+      kategoriLuaranContainer.classList.toggle(
+        "hidden",
+        !["luaran", "publikasi"].includes(inputs.validationType.value),
+      );
+    }
+    if (kategoriLabel) {
+      kategoriLabel.textContent =
+        inputs.validationType.value === "publikasi"
+          ? "Kategori Publikasi"
+          : "Kategori Luaran";
+    }
+    setKategoriOptions(
+      inputs.validationType.value === "publikasi"
+        ? kategoriPublikasi
+        : kategoriLuaran,
+      inputs.validationType.value,
+    );
+  }
+
+  function setKategoriOptions(categories = [], validationType = "luaran") {
+    if (!inputs.kategoriLuaran) return;
+    const storageKey =
+      validationType === "publikasi"
+        ? "rekognisi_kategori_publikasi"
+        : "rekognisi_kategori_luaran";
+    const storedCategory = localStorage.getItem(storageKey) || "";
+    let selected = storedCategory;
+    try {
+      const parsedCategory = JSON.parse(storedCategory);
+      selected = Array.isArray(parsedCategory)
+        ? parsedCategory[0] || ""
+        : parsedCategory || "";
+    } catch {
+      // Keep plain-text category values from older configurations.
+    }
+    const idKey =
+      validationType === "publikasi"
+        ? "id_kategori_publikasi"
+        : "id_kategori_luaran";
+    const nameKey =
+      validationType === "publikasi"
+        ? "nama_kategori_publikasi"
+        : "nama_kategori_luaran";
+    const options = categories.map(
+      (category) =>
+        `<option value="${category[idKey]}" ${
+          selected === category[idKey] ? "selected" : ""
+        }>${category[nameKey]}</option>`,
+    );
+    inputs.kategoriLuaran.innerHTML = [
+      '<option value="">Semua Kategori Luaran</option>',
+      ...options,
+    ].join("");
   }
 
   // --- Configuration Persistence (localStorage) ---
@@ -122,6 +201,10 @@ document.addEventListener("DOMContentLoaded", () => {
       inputs.tahunKegiatan.value =
         localStorage.getItem("rekognisi_tahun_kegiatan") || "";
     }
+    setKategoriOptions(
+      [],
+      inputs.validationType?.value === "publikasi" ? "publikasi" : "luaran",
+    );
     if (inputs.autoProcess) {
       inputs.autoProcess.checked =
         localStorage.getItem("rekognisi_auto_process") !== "false";
@@ -157,6 +240,14 @@ document.addEventListener("DOMContentLoaded", () => {
         inputs.tahunKegiatan.value.trim(),
       );
     }
+    if (inputs.kategoriLuaran) {
+      localStorage.setItem(
+        inputs.validationType.value === "publikasi"
+          ? "rekognisi_kategori_publikasi"
+          : "rekognisi_kategori_luaran",
+        inputs.kategoriLuaran.value,
+      );
+    }
     if (inputs.autoProcess) {
       localStorage.setItem(
         "rekognisi_auto_process",
@@ -187,6 +278,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Load config on startup
   loadConfig();
   window.parent.postMessage({ action: "GET_ACCESS_TOKEN" }, "*");
+  window.parent.postMessage({ action: "GET_LUARAN_CATEGORIES" }, "*");
+  window.parent.postMessage({ action: "GET_PUBLIKASI_CATEGORIES" }, "*");
 
   // --- Parent Communication ---
   closePanelBtn.addEventListener("click", () => {
@@ -225,6 +318,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const fetchResultsSection = document.getElementById("section-fetch-results");
   const fetchItemsList = document.getElementById("fetch-items-list");
   const fetchCountLabel = document.getElementById("fetch-count");
+
+  if (clearFetchedIdsBtn) {
+    clearFetchedIdsBtn.addEventListener("click", () => {
+      window.parent.postMessage({ action: "CLEAR_FETCHED_IDS" }, "*");
+      allFetchedItems = [];
+      filteredItems = [];
+      bulkState = "idle";
+      if (fetchResultsSection) fetchResultsSection.classList.add("hidden");
+      if (fetchItemsList) fetchItemsList.innerHTML = "";
+      if (searchInput) searchInput.value = "";
+      if (fetchCountLabel) fetchCountLabel.textContent = "0 Item";
+      stats.diambil.textContent = "0";
+      stats.filter.textContent = "0";
+      stats.validasi.textContent = "0";
+      mainActionBtn.className = "btn-filled";
+      mainActionIcon.textContent = "play_arrow";
+      mainActionText.textContent = "Mulai Validasi";
+    });
+  }
 
   const renderFetchedItems = (items) => {
     if (!fetchItemsList) return;
@@ -331,6 +443,16 @@ document.addEventListener("DOMContentLoaded", () => {
         tahunKegiatan: inputs.tahunKegiatan
           ? inputs.tahunKegiatan.value.trim()
           : "",
+        kategoriLuaran: inputs.kategoriLuaran
+          ? inputs.validationType.value === "luaran"
+            ? inputs.kategoriLuaran.value
+            : ""
+          : "",
+        kategoriPublikasi: inputs.kategoriLuaran
+          ? inputs.validationType.value === "publikasi"
+            ? inputs.kategoriLuaran.value
+            : ""
+          : "",
         autoProcess: inputs.autoProcess ? inputs.autoProcess.checked : true,
         pageFrom: parseInt(inputs.pageFrom.value, 10) || 1,
         pageTo: parseInt(inputs.pageTo.value, 10) || 10,
@@ -390,6 +512,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!data) return;
 
     switch (data.action) {
+      case "LUARAN_CATEGORIES":
+        kategoriLuaran = data.categories || [];
+        if (inputs.validationType.value === "luaran") {
+          setKategoriOptions(kategoriLuaran, "luaran");
+        }
+        break;
+
+      case "PUBLIKASI_CATEGORIES":
+        kategoriPublikasi = data.categories || [];
+        if (inputs.validationType.value === "publikasi") {
+          setKategoriOptions(kategoriPublikasi, "publikasi");
+        }
+        break;
+
       case "ACCESS_TOKEN":
         if (data.token && inputs.token) {
           inputs.token.value = data.token;

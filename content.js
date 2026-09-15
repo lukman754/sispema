@@ -331,6 +331,9 @@
     if (config.validationType === "luaran" && config.kategoriLuaran) {
       url += `&id_kategori_luaran=${encodeURIComponent(config.kategoriLuaran)}`;
     }
+    if (config.validationType === "rekognisi" && config.kategoriRekognisi) {
+      url += `&id_kategori_rekognisi_kegiatan=${encodeURIComponent(config.kategoriRekognisi)}`;
+    }
     if (config.validationType === "publikasi" && config.kategoriPublikasi) {
       url += `&id_kategori_publikasi=${encodeURIComponent(config.kategoriPublikasi)}`;
     }
@@ -357,6 +360,18 @@
     return (res?.data || []).filter((category) =>
       KATEGORI_LUARAN_IDS.includes(category.id_kategori_luaran),
     );
+  };
+
+  const getRekognisiCategories = async (token, logCb) => {
+    const res = await fetchWithRateLimit(
+      "https://sispema.unpam.ac.id/api/rekognisi-kegiatan/kategori",
+      token,
+      3,
+      1500,
+      logCb,
+      { method: "GET" },
+    );
+    return res?.data || [];
   };
 
   const getDetailAjuan = async (id, token, config, logCb) => {
@@ -578,6 +593,18 @@
         );
         iframe.contentWindow.postMessage(
           { action: "PUBLIKASI_CATEGORIES", categories: res?.data || [] },
+          "*",
+        );
+        break;
+      }
+
+      case "GET_REKOGNISI_CATEGORIES": {
+        const token = localStorage
+          .getItem("access_token")
+          ?.replace(/^__q_strn\|/, "");
+        const categories = await getRekognisiCategories(token, () => {});
+        iframe.contentWindow.postMessage(
+          { action: "REKOGNISI_CATEGORIES", categories },
           "*",
         );
         break;

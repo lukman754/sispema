@@ -18,6 +18,7 @@ Extension ini menambahkan panel **Auto Validator** langsung pada halaman Sispema
   - Awalan NIM/UCR
   - Semester
   - Tahun kegiatan untuk rekognisi
+  - Kategori rekognisi kegiatan
   - Kategori luaran
   - Kategori publikasi
 - Mode fetch terlebih dahulu untuk meninjau data sebelum validasi.
@@ -44,7 +45,7 @@ Setelah extension aktif, tombol floating Auto Validator akan muncul di sisi kana
 
 1. Buka panel melalui tombol floating.
 2. Pilih jenis validasi.
-3. Jika memilih Luaran atau Publikasi, pilih kategori dari dropdown.
+3. Jika memilih Rekognisi Kegiatan, Luaran, atau Publikasi, pilih kategori dari dropdown.
 4. Atur `Page From`, `Page To`, dan `Per Page`.
 5. Atur filter tambahan bila diperlukan.
 6. Aktifkan **Auto-validasi langsung setelah fetch** untuk langsung memproses data.
@@ -67,6 +68,12 @@ Untuk Luaran, extension mengirim parameter berikut ke API:
 id_kategori_luaran=KLU02
 ```
 
+Untuk Rekognisi Kegiatan:
+
+```text
+id_kategori_rekognisi_kegiatan=KRK132
+```
+
 Untuk Publikasi:
 
 ```text
@@ -77,17 +84,18 @@ Nama yang tampil di dropdown berasal dari endpoint kategori, sedangkan ID hanya 
 
 ## Endpoint API
 
-| Kebutuhan          | Endpoint                        |
-| ------------------ | ------------------------------- |
-| Ajuan rekognisi    | `/api/rekognisi-kegiatan/ajuan` |
-| Ajuan luaran       | `/api/luaran/ajuan`             |
-| Kategori luaran    | `/api/luaran/kategori`          |
-| Validasi luaran    | `/api/luaran/validasi`          |
-| Ajuan publikasi    | `/api/publikasi/ajuan`          |
-| Kategori publikasi | `/api/publikasi/kategori`       |
-| Validasi publikasi | `/api/publikasi/validasi`       |
-| Ajuan prestasi     | `/api/prestasi/ajuan`           |
-| Validasi prestasi  | `/api/prestasi/validasi`        |
+| Kebutuhan          | Endpoint                           |
+| ------------------ | ---------------------------------- |
+| Ajuan rekognisi    | `/api/rekognisi-kegiatan/ajuan`    |
+| Kategori rekognisi | `/api/rekognisi-kegiatan/kategori` |
+| Ajuan luaran       | `/api/luaran/ajuan`                |
+| Kategori luaran    | `/api/luaran/kategori`             |
+| Validasi luaran    | `/api/luaran/validasi`             |
+| Ajuan publikasi    | `/api/publikasi/ajuan`             |
+| Kategori publikasi | `/api/publikasi/kategori`          |
+| Validasi publikasi | `/api/publikasi/validasi`          |
+| Ajuan prestasi     | `/api/prestasi/ajuan`              |
+| Validasi prestasi  | `/api/prestasi/validasi`           |
 
 Semua endpoint digunakan pada host:
 

@@ -1,4 +1,5 @@
 # Sispema Auto Validator
+<img width="1111" height="979" alt="Screenshot 2026-09-17 135827" src="https://github.com/user-attachments/assets/d5617b5b-beea-45cf-84b4-32e618c3bc71" />
 
 Extension Chrome untuk membantu admin melakukan validasi ajuan Sispema secara lebih cepat dan terarah.
 
